@@ -5,8 +5,7 @@ bot_token = "8878548018:AAFMutlNT7bEZBKyvaWmvwue5ozjXtjVRHA"
 # 唯一接收通知、随机 2FA 和导出文件的 Telegram 数字用户 ID
 admin_id = 6812913
 
-# 读取该群内所有成员的消息；Bot 不在群内回复，结果只私聊 admin_id
-source_chat_id = -1003578760387
+# Worker 仅接受 admin_id 与 Bot 的私聊消息；群组、频道及其他用户消息均会忽略
 
 # 每个账号独立生成随机 2FA，长度允许 12-64
 new_2fa_length = 16

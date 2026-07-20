@@ -63,7 +63,6 @@ class BatchTask:
 class WorkerSettings:
     bot_token: str
     admin_id: int
-    source_chat_id: int | None
     new_password_length: int
     hint: str
     poll_interval: float
@@ -484,11 +483,6 @@ def build_parser() -> argparse.ArgumentParser:
         "--admin-id",
         type=int,
         help="唯一允许投递任务和接收结果的 Telegram 用户 ID；也可通过 TG_ADMIN_ID 提供。",
-    )
-    parser.add_argument(
-        "--source-chat-id",
-        type=int,
-        help="只监听指定群或频道 ID；也可通过 TG_SOURCE_CHAT_ID 提供。",
     )
     parser.add_argument(
         "--new-2fa-length",
@@ -968,21 +962,6 @@ def resolve_worker_settings(
     if admin_id <= 0:
         raise ValueError("管理员用户 ID 必须是正整数。")
 
-    source_value: object = (
-        args.source_chat_id
-        if args.source_chat_id is not None
-        else environ.get("TG_SOURCE_CHAT_ID") or config.get("source_chat_id")
-    )
-    if source_value is None:
-        source_chat_id = None
-    else:
-        try:
-            source_chat_id = int(str(source_value))
-        except (TypeError, ValueError) as exc:
-            raise ValueError("监听群 ID 必须是整数。") from exc
-        if source_chat_id == 0:
-            raise ValueError("监听群 ID 不能为 0。")
-
     length_value = (
         args.new_2fa_length
         if args.new_2fa_length is not None
@@ -1042,7 +1021,6 @@ def resolve_worker_settings(
     return WorkerSettings(
         bot_token=bot_token,
         admin_id=admin_id,
-        source_chat_id=source_chat_id,
         new_password_length=new_password_length,
         hint=hint,
         poll_interval=poll_interval,
@@ -1059,11 +1037,9 @@ def should_accept_worker_message(
     settings: WorkerSettings,
     *,
     sender_id: int | None,
-    chat_id: int | None,
+    is_private: bool,
 ) -> bool:
-    if settings.source_chat_id is not None:
-        return chat_id == settings.source_chat_id
-    return sender_id == settings.admin_id
+    return is_private and sender_id == settings.admin_id
 
 
 async def process_worker_queue(
@@ -1163,7 +1139,7 @@ async def run_worker(args: argparse.Namespace) -> int:
         if not should_accept_worker_message(
             settings,
             sender_id=event.sender_id,
-            chat_id=event.chat_id,
+            is_private=event.is_private,
         ):
             return
 
@@ -1177,7 +1153,7 @@ async def run_worker(args: argparse.Namespace) -> int:
                 "发送任务格式：\n"
                 "+手机号 --- 登录链接\n"
                 "+手机号 --- https://.../getcode?id=...\n"
-                "指定群内任何成员均可投递，结果只私聊管理员。"
+                "仅接受管理员与 Bot 的私聊消息。"
             )
             return
         if command == "/status":
@@ -1234,10 +1210,9 @@ async def run_worker(args: argparse.Namespace) -> int:
             keep_artifacts=settings.keep_artifacts,
         )
     )
-    source_description = settings.source_chat_id or "管理员私聊及所在会话"
     print(
         f"Worker 已启动：@{getattr(me, 'username', None) or me.id}，"
-        f"监听={source_description}"
+        f"仅监听管理员私聊（admin_id={admin_id}）"
     )
     try:
         try:

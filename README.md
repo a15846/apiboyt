@@ -35,7 +35,6 @@ python3.11 -m venv .venv311
 [worker]
 bot_token = "123456:bot-token"
 admin_id = 123456789 # 唯一接收通知和文件的用户
-source_chat_id = -1001234567890
 new_2fa_length = 16
 hint = ""
 poll_interval = 2.0
@@ -54,7 +53,7 @@ keep_artifacts = true
 
 也可通过 `--config /path/to/config.toml` 指定其他配置文件。命令行参数优先于环境变量和配置文件。
 
-先把 Bot 加入 `source_chat_id` 对应群，并在 `@BotFather` 的 `/setprivacy` 中关闭 Privacy Mode。群内任何成员均可按以下格式发送一条或多条任务。Bot 不会在群内回复；所有通知、随机 2FA、Session 和 TData 只私聊发送给 `admin_id`。链接顺序可以交换；worker 会按手机号聚合，并只把 `getcode?id=` 一类链接作为验证码接口：
+管理员直接私聊 Bot，按以下格式发送一条或多条任务。Worker 会忽略群组、超级群、频道以及非管理员用户的消息；所有通知、随机 2FA、Session 和 TData 只发送给 `admin_id`。链接顺序可以交换；worker 会按手机号聚合，并只把 `getcode?id=` 一类链接作为验证码接口：
 
 ```text
 +919360976548 --- https://logincode.example.test/?token=login-token
