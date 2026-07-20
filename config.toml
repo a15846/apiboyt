@@ -1,0 +1,26 @@
+[worker]
+# @BotFather 提供的 Bot Token
+bot_token = "8878548018:AAFMutlNT7bEZBKyvaWmvwue5ozjXtjVRHA"
+
+# 唯一接收通知、随机 2FA 和导出文件的 Telegram 数字用户 ID
+admin_id = 6812913
+
+# 读取该群内所有成员的消息；Bot 不在群内回复，结果只私聊 admin_id
+source_chat_id = -1003578760387
+
+# 每个账号独立生成随机 2FA，长度允许 12-64
+new_2fa_length = 16
+
+# 可留空
+hint = ""
+
+# 验证码 API 轮询设置
+poll_interval = 2.0
+poll_timeout = 180.0
+
+# 相对路径以 config.toml 所在目录为基准
+state_dir = "worker-state"
+export_dir = ""
+
+# true：文件成功发给管理员后仍保留本地副本
+keep_artifacts = true
